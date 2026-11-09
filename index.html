@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UEFA Champions League — Edles Gold Design & Live Timeline</title>
+    <title>UEFA Champions League — Edles Gold Design, Timeline & VAR</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23070b19%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⭐</text></svg>">
     <link rel="apple-touch-icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23070b19%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⭐</text></svg>">
@@ -28,6 +28,7 @@
             --accent-green: #22c55e;
             --accent-red: #ef4444;
             --accent-yellow: #eab308;
+            --accent-var: #f97316; /* Edles Orange für VAR */
         }
 
         * { box-sizing: border-box; }
@@ -52,7 +53,7 @@
             position: relative;
         }
 
-        /* TOR-ALARM BANNER */
+        /* TOR- / VAR-ALARM BANNER */
         #goalAlertBanner { display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #111827, #1f2937); border: 2px solid var(--gold-primary); box-shadow: 0 10px 30px rgba(212,175,55,0.4); border-radius: 14px; padding: 18px 24px; z-index: 2000; width: 90%; max-width: 480px; text-align: center; cursor: pointer; }
         .goal-alert-title { font-size: 1.2rem; font-weight: 900; color: var(--gold-primary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
         .goal-alert-scorer { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #fff; }
@@ -159,7 +160,7 @@
             font-weight: 600;
         }
         .live-badge {
-            display: none; /* Wird per JS auf 'flex' geschaltet, wenn Spiele live sind */
+            display: none;
             color: var(--accent-red);
             background: rgba(239, 68, 68, 0.15);
             padding: 4px 12px;
@@ -377,7 +378,7 @@
         }
         .match-center-score:hover { border-color: #fff; }
 
-        /* DEZENTE FARB-UNTERLEGUNG FÜR TORE & KARTEN */
+        /* EREIGNISSE & VAR-HINWEISE */
         .team-events-list {
             display: flex;
             flex-direction: column;
@@ -396,13 +397,17 @@
             width: fit-content;
             font-weight: 500;
         }
-        /* Dezent unterlegtes Tor (Gold-Ton) */
         .team-event-item.is-goal {
             background: rgba(212, 175, 55, 0.12);
             border: 1px solid rgba(212, 175, 55, 0.3);
             color: #fef08a;
         }
-        /* Dezent unterlegte Karte (dunkel-neutrale/rötliche oder gelbliche Tönung) */
+        .team-event-item.is-var {
+            background: rgba(249, 115, 22, 0.15);
+            border: 1px solid rgba(249, 115, 22, 0.4);
+            color: #fdba74;
+            text-decoration: line-through;
+        }
         .team-event-item.is-card {
             background: rgba(55, 65, 81, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -448,6 +453,11 @@
             min-width: 65px;
             text-align: center;
         }
+        .timeline-node.var-node {
+            background: rgba(249, 115, 22, 0.1);
+            border-color: rgba(249, 115, 22, 0.3);
+            opacity: 0.7;
+        }
         .timeline-time { font-weight: bold; color: var(--gold-light); margin-bottom: 2px; }
         .timeline-score-badge {
             background: var(--gold-primary);
@@ -458,10 +468,7 @@
             border-radius: 3px;
             margin-bottom: 2px;
         }
-        .timeline-icon-box {
-            font-size: 0.85rem;
-            margin-bottom: 2px;
-        }
+        .timeline-icon-box { font-size: 0.85rem; margin-bottom: 2px; }
         .timeline-scorer-name {
             font-size: 0.7rem;
             color: #ffffff;
@@ -470,6 +477,7 @@
             max-width: 80px;
             word-break: break-word;
         }
+        .timeline-node.var-node .timeline-scorer-name { text-decoration: line-through; color: #fdba74; }
 
         /* TABELLE */
         .table-container { width: 100%; overflow-x: auto; }
@@ -514,9 +522,9 @@
 </head>
 <body>
 
-<!-- TOR-ALARM / VAR POPUP -->
+<!-- TOR- / VAR-ALARM POPUP -->
 <div id="goalAlertBanner" onclick="hideGoalAlert()">
-    <div class="goal-alert-title" id="goalAlertTeam">⭐ UCL Tor!</div>
+    <div class="goal-alert-title" id="goalAlertTitle">⭐ UCL Tor!</div>
     <div class="goal-alert-scorer" id="goalAlertScorer">Torschütze & Minute</div>
     <div class="goal-alert-match" id="goalAlertMatch">Spielstand & Paarung</div>
     <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">(Zum Schließen antippen)</div>
@@ -551,7 +559,7 @@
     </div>
 
     <div class="meta-info">
-        <span class="supabase-badge">● Supabase Tor-Alarm</span>
+        <span class="supabase-badge">● Supabase Tor- & VAR-Alarm</span>
         <div class="live-badge" id="liveIndicatorBadge"><span class="live-dot"></span> LIVE-SPIELE LÄUFEN</div>
     </div>
 
@@ -569,9 +577,11 @@
         </div>
         <div style="padding: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             <button class="header-action-btn" onclick="sendTestPush()" style="background: var(--gold-primary); color: #030712; padding: 8px 14px; font-weight: bold;">
-                🚀 Test-Push über Edge Function senden
+                🚀 Test-Push (Tor) senden
             </button>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Löst einen Test-Push für `push_subscriptions_ucl` aus.</span>
+            <button class="header-action-btn" onclick="sendTestVarPush()" style="background: var(--accent-var); color: #030712; padding: 8px 14px; font-weight: bold;">
+                📺 Test-Push (VAR Tor zurückgenommen) senden
+            </button>
         </div>
     </div>
 
@@ -611,7 +621,7 @@
             <div class="section-header">
                 <span id="matchdayTableHeader">Spieltag — Spiele & Ergebnisse</span>
                 <div class="header-actions">
-                    <button class="header-action-btn" onclick="subscribePush()" style="background: var(--gold-primary); color: #030712; font-weight: bold;">🔔 Supabase UCL Tor-Alarm</button>
+                    <button class="header-action-btn" onclick="subscribePush()" style="background: var(--gold-primary); color: #030712; font-weight: bold;">🔔 Supabase UCL Tor- & VAR-Alarm</button>
                     <button class="header-action-btn" onclick="loadAllData(true)">🔄 Aktualisieren</button>
                 </div>
             </div>
@@ -633,7 +643,7 @@
             <div class="section-header">
                 <span>Champions League-Ligaphase (Gesamt)</span>
                 <div class="header-actions">
-                    <button class="header-action-btn" onclick="subscribePush()" style="background: var(--gold-primary); color: #030712; font-weight: bold;">🔔 Supabase UCL Tor-Alarm</button>
+                    <button class="header-action-btn" onclick="subscribePush()" style="background: var(--gold-primary); color: #030712; font-weight: bold;">🔔 Supabase UCL Tor- & VAR-Alarm</button>
                 </div>
             </div>
             <div class="table-container">
@@ -715,7 +725,7 @@
             <div class="table-container">
                 <table>
                     <thead><tr><th>Spieler & Verein</th><th style="text-align:center; width:60px;">🟨 Gelb</th><th style="text-align:center; width:70px;">🟨🟥 Gelb-Rot</th><th style="text-align:center; width:60px;">🟥 Rot</th></tr></thead>
-                    <tbody id="cardsModalBody"><tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Lade...</td></tr></tbody>
+                    <tbody id="cardsModalBody"><tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Noch keine Karten erfasst</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -795,7 +805,7 @@
                 p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))),
                 auth: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth'))))
             }, { onConflict: 'endpoint' });
-            alert("Supabase UCL Tor-Alarm erfolgreich aktiviert!");
+            alert("Supabase Tor- & VAR-Alarm erfolgreich aktiviert!");
         } catch (e) {
             alert("Fehler bei Push-Registrierung: " + e.message);
         }
@@ -822,7 +832,26 @@
                     body: "Test-Alarm über Supabase Edge Function erfolgreich ausgelöst!"
                 })
             });
-            if (response.ok) alert("Test-Push für UCL erfolgreich ausgelöst!");
+            if (response.ok) alert("Test-Push (Tor) erfolgreich ausgelöst!");
+            else alert("Fehler von der Edge Function.");
+        } catch (e) {
+            alert("Netzwerkfehler: " + e.message);
+        }
+    }
+
+    async function sendTestVarPush() {
+        try {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    table: 'push_subscriptions_ucl',
+                    title: "📺 VAR-Entscheidung: Tor zurückgenommen!",
+                    body: "Galatasaray vs. VfB Stuttgart (Tor nach Videobeweis annulliert)"
+                })
+            });
+            if (response.ok) alert("Test-Push (VAR) erfolgreich ausgelöst!");
             else alert("Fehler von der Edge Function.");
         } catch (e) {
             alert("Netzwerkfehler: " + e.message);
@@ -846,16 +875,29 @@
                 let isHome = det.team?.id === hTeamId;
                 let tName = isHome ? homeTeamName : awayTeamName;
 
+                // ERKENNUNG: Tor zurückgenommen / VAR annulsiert
+                let isVarCancelled = typeTxt.includes("cancelled") || typeTxt.includes("disallowed") || textDesc.includes("cancelled") || textDesc.includes("disallowed") || textDesc.includes("var") || textDesc.includes("zurückgenommen");
+
                 if (det.type?.text === "Goal" || typeTxt.includes("goal") || det.scoringPlay) {
-                    if (isHome) cHomeCount++; else cAwayCount++;
-                    eventsList.push({
-                        type: 'goal',
-                        minute: clock,
-                        text: pName,
-                        score: `${cHomeCount}:${cAwayCount}`,
-                        team: tName,
-                        isHome: isHome
-                    });
+                    if (isVarCancelled) {
+                        eventsList.push({
+                            type: 'var_cancelled',
+                            minute: clock,
+                            text: pName,
+                            team: tName,
+                            isHome: isHome
+                        });
+                    } else {
+                        if (isHome) cHomeCount++; else cAwayCount++;
+                        eventsList.push({
+                            type: 'goal',
+                            minute: clock,
+                            text: pName,
+                            score: `${cHomeCount}:${cAwayCount}`,
+                            team: tName,
+                            isHome: isHome
+                        });
+                    }
                 } else if (typeTxt.includes("yellow") || typeTxt.includes("gelb") || textDesc.includes("yellow")) {
                     if (!playerYellowCount[pName]) playerYellowCount[pName] = 0;
                     playerYellowCount[pName]++;
@@ -964,7 +1006,7 @@
                             let sKey = `${pName}_${tName}`;
                             if (!scorersMap[sKey]) scorersMap[sKey] = { name: pName, team: tName, goals: 0 };
                             scorersMap[sKey].goals++;
-                        } else {
+                        } else if (evItem.type !== 'var_cancelled') {
                             let cKey = `${pName}_${tName}`;
                             if (!cardsMap[cKey]) cardsMap[cKey] = { name: pName, team: tName, yellow: 0, yellowRed: 0, red: 0 };
                             if (evItem.type === 'yellow') cardsMap[cKey].yellow++;
@@ -1098,17 +1140,23 @@
 
             let dateFormatted = m.date ? m.date.split('-').reverse().join('.') : '';
 
-            // TIMELINE FÜR TORE
+            // TIMELINE FÜR TORE & VAR-ANNULLIERUNGEN
             let timelineHtml = '';
-            let goalsOnly = m.events ? m.events.filter(e => e.type === 'goal') : [];
-            if (goalsOnly.length > 0) {
-                let nodes = goalsOnly.map(ev => {
+            let validEventsForTimeline = m.events ? m.events.filter(e => e.type === 'goal' || e.type === 'var_cancelled') : [];
+            if (validEventsForTimeline.length > 0) {
+                let nodes = validEventsForTimeline.map(ev => {
+                    let isVar = ev.type === 'var_cancelled';
+                    let icon = isVar ? '📺 ❌' : '⚽';
+                    let nodeClass = isVar ? 'timeline-node var-node' : 'timeline-node';
+                    let scoreBadgeHtml = isVar ? '<span class="timeline-score-badge" style="background:var(--accent-var);">VAR Tor Annul.</span>' : `<span class="timeline-score-badge">${ev.score}</span>`;
+                    let nameText = isVar ? `${ev.text} (Abgem.)` : ev.text;
+
                     return `
-                        <div class="timeline-node">
+                        <div class="${nodeClass}">
                             <span class="timeline-time">${ev.minute}'</span>
-                            <span class="timeline-score-badge">${ev.score}</span>
-                            <div class="timeline-icon-box">⚽</div>
-                            <span class="timeline-scorer-name">${ev.text}</span>
+                            ${scoreBadgeHtml}
+                            <div class="timeline-icon-box">${icon}</div>
+                            <span class="timeline-scorer-name">${nameText}</span>
                         </div>
                     `;
                 }).join('');
@@ -1128,10 +1176,12 @@
                 m.events.forEach(ev => {
                     let isHomeTeam = (ev.team === m.home);
                     let isGoal = (ev.type === 'goal');
-                    let icon = isGoal ? '⚽' : (ev.type === 'yellow' ? '🟨' : (ev.type === 'yellowred' ? '🟨🟥' : '🟥'));
-                    let eventText = `${ev.minute}' ${ev.text} ${icon}`;
+                    let isVar = (ev.type === 'var_cancelled');
                     
-                    let cssClass = isGoal ? 'team-event-item is-goal' : 'team-event-item is-card';
+                    let icon = isGoal ? '⚽' : (isVar ? '📺 ❌ VAR (Tor abgem.)' : (ev.type === 'yellow' ? '🟨' : (ev.type === 'yellowred' ? '🟨🟥' : '🟥')));
+                    let eventText = isVar ? `${ev.minute}' ${ev.text} ${icon}` : `${ev.minute}' ${ev.text} ${icon}`;
+                    
+                    let cssClass = isGoal ? 'team-event-item is-goal' : (isVar ? 'team-event-item is-var' : 'team-event-item is-card');
                     let itemHtml = `<div class="${cssClass}"><span>${eventText}</span></div>`;
                     
                     if (isHomeTeam) {
